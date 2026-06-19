@@ -1,0 +1,68 @@
+name: Build MashConfig
+
+on:
+  push:
+    paths:
+      - 'MashConfig/**'
+      - '.github/workflows/build.yml'
+  pull_request:
+    paths:
+      - 'MashConfig/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            preset: windows
+            artifact: MashConfig-windows
+          - os: ubuntu-latest
+            preset: linux
+            artifact: MashConfig-linux
+          - os: macos-latest
+            preset: macos
+            artifact: MashConfig-macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux deps
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y xorg-dev libgl1-mesa-dev libudev-dev
+
+      - name: Configure
+        working-directory: MashConfig
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        working-directory: MashConfig
+        run: cmake --build build/${{ matrix.preset }} --config Release
+
+      - name: Collect (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          mkdir staging
+          copy MashConfig\build\windows\Release\MashConfig.exe staging\
+          xcopy /E /I MashConfig\build\windows\Release\Assets staging\Assets
+
+      - name: Collect (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p staging
+          cp MashConfig/build/linux/MashConfig staging/
+          cp -r MashConfig/build/linux/Assets staging/
+          cp packaging/99-buttonmash.rules staging/
+
+      - name: Collect (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir -p staging
+          cp -R MashConfig/build/macos/MashConfig.app staging/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: staging/

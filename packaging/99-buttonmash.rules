@@ -1,0 +1,10 @@
+# Grant the logged-in desktop user access to the ButtonMash RawHID interface
+# so MashConfig can talk to it without root.
+#
+# Install:
+#   sudo cp packaging/99-buttonmash.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload-rules && sudo udevadm trigger
+#
+# VID 1B4F / PID B175 = ButtonMash (SparkFun Pro Micro based).
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1b4f", ATTRS{idProduct}=="b175", TAG+="uaccess"
+KERNEL=="hidraw*", ATTRS{idVendor}=="1b4f", ATTRS{idProduct}=="b175", MODE="0660", TAG+="uaccess"
