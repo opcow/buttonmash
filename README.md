@@ -106,4 +106,3 @@ avrdude is already waiting, then trigger the bootloader within the ~8 second win
 
 The hardware switch is the safety net if firmware ever becomes unresponsive — the
 bootloader is separate from the sketch, so a double-tap reset always recovers.
-# buttonmash
