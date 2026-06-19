@@ -37,7 +37,7 @@ Two parts:
   auto-reset used for flashing — see Reflashing below.
 - `#include <Arduino.h>` **must be first** — in a `.cpp` it isn't auto-included,
   so `USBCON` would be undefined and HID-Project fails to compile.
-- **A press emits a configurable config** (`keyType, mode, rapidDelay, keys[6]`):
+- **A press emits a configurable action** (`keyType, mode, rapidDelay, keys[6]`):
   - `keyType`: `0` = keyboard, `1` = consumer (media).
   - `keys[6]`: for **keyboard**, a **chord** — up to `NUM_KEYS = 6` HID usages
     held simultaneously (`0` = empty slot; usage `0x00` is never a real key).
@@ -159,13 +159,14 @@ premultiplies RGB by alpha before the bicubic resize and un-premultiplies after.
 ## Reflashing
 
 Because there's no CDC port, `pio run -t upload` alone **cannot** reset the board
-into the bootloader. Enter the bootloader first, then upload within ~8s:
+into the bootloader. Run `pio run -t upload` first so avrdude is waiting, then
+trigger the bootloader within ~8s:
 
-1. **Software:** MashConfig → "Update firmware (enter bootloader)" (sends `B`),
-   then `pio run -t upload`.
-2. **Hardware (recovery):** double-tap a momentary switch wired across `RST`↔`GND`
-   (~750ms window). Always works because the bootloader is separate from the
-   sketch.
+1. **Software:** run `pio run -t upload`, then click "Update firmware (enter
+   bootloader)" in MashConfig (sends `B`).
+2. **Hardware (recovery):** run `pio run -t upload`, then double-tap a momentary
+   switch wired across `RST`↔`GND` (~750ms window). Always works because the
+   bootloader is separate from the sketch.
 
 ## Environment notes
 

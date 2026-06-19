@@ -14,7 +14,7 @@ The device is a **keyboard-only** USB device (no COM port). It exposes:
 
 USB identity: VID `0x1B4F`, PID `0xB175`, product string `ButtonMash`.
 
-A button press emits a configurable config: either a **keyboard chord** — up to
+A button press emits a configurable action: either a **keyboard chord** — up to
 6 HID usages held together, which covers a single key, multi-key combos
 (`Ctrl+Shift+W`), left/right modifier distinction (`RightCtrl+Del`), and a bare
 modifier on its own (just the Windows key) — or a single **media** key. Plus a
@@ -41,6 +41,8 @@ The host sends a report; byte 0 is the command:
 16-bit consumer usage lives in `k0` (low) / `k1` (high).
 
 ## MashConfig (host app)
+
+Source: [github.com/opcow/mashconfig](https://github.com/opcow/mashconfig)
 
 `MashConfig/` is a cross-platform (Windows/Linux/macOS) C++ app built with **Dear
 ImGui** (GLFW + OpenGL3) over a **hidapi** transport. It auto-discovers the device
@@ -87,20 +89,20 @@ Prebuilt binaries for all three platforms are produced by CI
 ## Reflashing the firmware
 
 Because the device has **no CDC serial port**, PlatformIO's normal 1200bps-touch
-auto-reset cannot put it into the bootloader. Enter the bootloader first, then
-upload within the ~8 second window:
+auto-reset cannot put it into the bootloader. Start the upload command first so
+avrdude is already waiting, then trigger the bootloader within the ~8 second window:
 
-1. **Software (normal):** in MashConfig click **"Update firmware (enter
-   bootloader)"** (sends the `B` command). Then run:
+1. **Software (normal):** run the upload command first, then immediately click
+   **"Update firmware (enter bootloader)"** in MashConfig (sends the `B` command):
 
    ```bash
    pio run -t upload
    ```
 
-2. **Hardware (recovery fallback):** double-tap a momentary switch wired between
-   the **`RST`** and **`GND`** pads (short them twice within ~750 ms). The Caterina
-   bootloader stays active ~8 s, exposing its own port (PID `0x9205`) for avrdude.
-   Then run `pio run -t upload`.
+2. **Hardware (recovery fallback):** run `pio run -t upload`, then double-tap a
+   momentary switch wired between the **`RST`** and **`GND`** pads (short them
+   twice within ~750 ms). The Caterina bootloader stays active ~8 s, exposing its
+   own port (PID `0x9205`) for avrdude.
 
 The hardware switch is the safety net if firmware ever becomes unresponsive — the
 bootloader is separate from the sketch, so a double-tap reset always recovers.
